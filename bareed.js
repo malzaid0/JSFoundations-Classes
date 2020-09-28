@@ -43,11 +43,13 @@ class Point {
  **********************************************************/
 class Wallet {
   // implement Wallet!
-  constructor(money = 0) {}
+  constructor(money = 0) {
+    this.money = money
+  }
 
-  credit = amount => {};
+  credit = amount => {this.money += amount};
 
-  debit = amount => {};
+  debit = amount => {this.money -= amount};
 }
 
 /**********************************************************
@@ -63,6 +65,12 @@ class Wallet {
  **********************************************************/
 class Person {
   // implement Person!
+  constructor(name, x, y, money) {
+    this.name=name
+    this.location = new Point(x,y)
+    this.wallet = new Wallet(money)
+  }
+  moveTo = (x) => this.location = x
 }
 
 /**********************************************************
@@ -80,8 +88,19 @@ class Person {
  *
  * new vendor = new Vendor(name, x, y);
  **********************************************************/
-class Vendor {
+class Vendor extends Person{
   // implement Vendor!
+  constructor(name, x, y, money, range=5, price=1) {
+    super(name, x, y, money)
+    this.range=range
+    this.price=price
+  }
+  sellTo = (customer, numberOfIceCreams) => {
+    this.location = customer.location
+    let total = numberOfIceCreams * this.price
+    this.wallet.credit(total)
+    customer.wallet.debit(total)
+  }
 }
 
 /**********************************************************
@@ -100,8 +119,22 @@ class Vendor {
  *
  * new customer = new Customer(name, x, y);
  **********************************************************/
-class Customer {
+class Customer extends Person{
   // implement Customer!
+  constructor(name, x, y, money=10) {
+    super(name, x, y, money);
+  }
+  _isInRange = vendor => this.location.distanceTo(vendor.location)<=vendor.range
+
+  _haveEnoughMoney = (vendor, numberOfIceCreams) => {
+    let total = numberOfIceCreams * vendor.price
+    return total <= this.wallet.money;
+  }
+
+  requestIceCream = (vendor, numberOfIceCreams) => {
+    if (this._isInRange(vendor) === true && this._haveEnoughMoney(vendor,numberOfIceCreams)) vendor.sellTo(this,numberOfIceCreams)
+    else return false
+  }
 }
 
 export { Point, Wallet, Person, Customer, Vendor };
